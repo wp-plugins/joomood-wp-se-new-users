@@ -122,9 +122,24 @@ $showt="no";
 		
 		$mainboxbgcol=$mainbox_bg_color;
 
+		
+		// Mainbox Width
+		
+		if ($mainbox_width=="" || $mainbox_width=="0") {
+		$mainboxwidth="100";
+		$mbox="100%";
+		} else {
+		$mainboxwidth=$mainbox_width;
+		$mbox=$mainboxwidth."%";
+		}
+		
+		if($how_many_users=="1") {
+		$mytbl=$mywidth;
+		} else {
+		$mytbl=floor($mainboxwidth/$how_many_users);
+		}
 
 // ---------------------------------------------------------
-
 		
 		
 		// Check Inner Box border style
@@ -173,14 +188,6 @@ $showt="no";
 		$mystyle="style=\"border:".$boxbord." ".$boxbordcol."; background-color: ".$boxbgcol.";\"";
 		$mymainstyle="style=\"border:".$mainboxbord." ".$mainboxbordcol."; background-color: ".$mainboxbgcol.";\"";
 		
-
-		// Mainbox Width
-
-		if($how_many_users>1) {
-		$myw=$mywidth*$how_many_users;
-		} else {
-		$myw="100%";
-		}
 
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -250,25 +257,48 @@ $my_string="<tr><td align=\"center\" scope=\"row\"><font color=\"{$name_color}\"
 }
 
 
+
+
 $mydir=$wpdir."/wp-content/plugins/wp-se_newusers";
+$subdir = $row['user_id']+999-(($row['user_id']-1)%1000);
+
+if($use_resize !=="no") { // RESIZING SCRIPT
 
 if ($row['user_photo']!='') {
-
 // Creates a thumbnail based on your personal dims (width/height), without stretching the original pic
-
-$mypic="<img src=\"{$mydir}/image.php/{$row['user_photo']}?width={$mywidth}&amp;height={$myheight}&amp;cropratio=1:1&amp;quality=100&amp;image={$socialdir}/uploads_user/1000/{$row['user_id']}/{$row['user_photo']}\" style=\"border:".$image_border."px solid ".$image_bordercolor."\" alt=\"".$myn."\" />";
+$mypic="<img src=\"{$mydir}/image.php/{$row['user_photo']}?width={$mywidth}&amp;height={$myheight}&amp;cropratio=1:1&amp;quality=100&amp;image={$socialdir}/uploads_user/{$subdir}/{$row['user_id']}/{$row['user_photo']}\" style=\"border:".$image_border."px solid ".$image_bordercolor."\" alt=\"".$myn."\" />";
 } else {
 $mypic="<img src=\"{$mydir}/image.php/nophoto.gif?width={$mywidth}&amp;height={$myheight}&amp;cropratio=1:1&amp;quality=100&amp;image={$socialdir}/{$empty_image_url}\" style=\"border:".$image_border."px ".$image_bordercolor." solid\" alt=\"".$myn."\" />";
 }
 
+} else { // NO RESIZING SCRIPT
+
+if ($row['user_photo']!='') {
+// Creates a thumbnail based on your personal dims (width/height)
+$myp=str_replace(".", "_thumb.", $row['user_photo']);
+$mypfile=$socialdir."/uploads_user/{$subdir}/{$row['user_id']}/{$myp}";
+
+if (@fopen($mypfile, "r")) {
+$myps=str_replace(".", "_thumb.", $row['user_photo']);
+$mypfile=$socialdir."/uploads_user/{$subdir}/{$row['user_id']}/{$myps}";
+} else {
+$mypfile=$socialdir."/uploads_user/{$subdir}/{$row['user_id']}/{$row['user_photo']}";
+}
+
+$mypic="<img src=\"{$mypfile}\" width=\"{$mywidth}\" height=\"{$myheight}\" style=\"border:".$image_border."px solid ".$image_bordercolor."\" alt=\"".$myn."\" />";
+} else {
+$mypic="<img src=\"{$socialdir}/{$empty_image_url}\" width=\"{$mywidth}\" height=\"{$myheight}\" style=\"border:".$image_border."px ".$image_bordercolor." solid\" alt=\"".$myn."\" />";
+}
+
+}
+
 
 if($i<$how_many_users) {
-
 $rows .= "
-<td valign=\"top\">
-<table width=\"".$mywidth."\" cellspacing=\"{$inner_cellspacing}\" cellpadding=\"{$inner_cellpadding}\" ".$mystyle.">
+<td valign=\"top\" align=\"left\">
+<table width=\"100%\" cellspacing=\"{$inner_cellspacing}\" cellpadding=\"{$inner_cellpadding}\" ".$mystyle.">
 <tr>
-<td width=\"".$mywidth."\" align=\"center\" valign=\"top\" scope=\"row\"><a href='".$socialdir."/profile.php?user_id=".$row['user_id']."' title='{$go_profile_text} ".$myn."'>".$mypic."</a></td>
+<td width=\"".$mytbl."%\" align=\"center\" valign=\"top\" scope=\"row\"><a href='".$socialdir."/profile.php?user_id=".$row['user_id']."' title='{$go_profile_text} ".$myn."'>".$mypic."</a></td>
 </tr>
 {$my_string}
 </table>
@@ -276,12 +306,11 @@ $rows .= "
 ";
 
 } else {
-
 $rows .= "
-</tr><tr><td>
-<table width=\"".$mywidth."\" cellspacing=\"{$inner_cellspacing}\" cellpadding=\"{$inner_cellpadding}\" ".$mystyle.">
+</tr><tr><td valign=\"top\" align=\"left\">
+<table width=\"100%\" cellspacing=\"{$inner_cellspacing}\" cellpadding=\"{$inner_cellpadding}\" ".$mystyle.">
 <tr>
-<td width=\"".$mywidth."\" align=\"center\" valign=\"top\" scope=\"row\"><a href='".$socialdir."/profile.php?user_id=".$row['user_id']."' title='{$go_profile_text} ".$myn."'>".$mypic."</a></td>
+<td width=\"".$mytbl."%\" align=\"center\" valign=\"top\" scope=\"row\"><a href='".$socialdir."/profile.php?user_id=".$row['user_id']."' title='{$go_profile_text} ".$myn."'>".$mypic."</a></td>
 </tr>
 {$my_string}
 </table>
@@ -295,7 +324,7 @@ $i++;
 
 }
 
-$content .="<table width=\"{$myw}\" cellspacing=\"{$outer_cellspacing}\" cellpadding=\"{$outer_cellpadding}\" {$mymainstyle}><tr>";
+$content .="<table width=\"{$mbox}\" cellspacing=\"{$outer_cellspacing}\" cellpadding=\"{$outer_cellpadding}\" {$mymainstyle}><tr>";
 $content .="{$rows}";
 $content .="</tr></table>";
 
